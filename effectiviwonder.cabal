@@ -29,6 +29,7 @@ library
                        Effectiviwonder.Interact
                        Effectiviwonder.Die
   build-depends:       base                 >= 4.10.0.0 && < 5,
+                       sop-core             >= 0.4.0.0,
                        red-black-record     >= 2.0.2.2,
                        transformers         >= 0.5, 
                        mtl                  >= 2.2.2,

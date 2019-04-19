@@ -3,14 +3,18 @@
              ScopedTypeVariables,
              FlexibleInstances,
              AllowAmbiguousTypes,
-             TypeApplications #-}
+             TypeApplications,
+             FlexibleContexts #-}
 module Effectiviwonder (
         Capable (..) 
     ,   MultiCapable (..)
     ,   Capabilities (..)
+    ,   fixRecord
 ) where 
 
 import Data.RBR
+import Data.SOP
+import Data.SOP.NP
 import Data.Kind
 import GHC.TypeLits
 
@@ -28,4 +32,10 @@ newtype Capabilities (t :: Map Symbol Type) = Capabilities (Record I t)
 instance Key name t => Capable name (Capabilities t) where
     type Capability name (Capabilities t) = Value name t
     getCapability (Capabilities r) = getFieldI @name r
+
+-- An easy way of getting infinite loops
+fixRecord :: forall t result. (Productlike '[] t result, All Top result) => Record ((->) (Record I t)) t -> Record I t
+fixRecord o = 
+    let knotted = fromNP . liftA_NP (\f -> I (f knotted)) . toNP $ o
+     in knotted
 
