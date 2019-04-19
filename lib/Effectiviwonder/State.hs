@@ -2,6 +2,7 @@
              ScopedTypeVariables, 
              ExplicitForAll,
              TypeApplications,
+             TypeFamilies,
              AllowAmbiguousTypes #-}
 module Effectiviwonder.State (
         State(..)
@@ -24,23 +25,24 @@ data State s m = State {
     ,  _modify :: (s -> s) -> m ()
     }
 
-get :: forall name env m s. (MonadReader env m, Capable env m name (State s)) => m s
+-- These constraints are kind of horrific :(
+get :: forall name env m s. (MonadReader env m, Has name env, Stuff name env ~ State s m) => m s
 get =
-    do c <- getCapability @env @m @name @(State s) <$> ask
+    do c <- getStuff @name <$> ask
        _get c
 
-set :: forall name env m s. (MonadReader env m, Capable env m name (State s)) => s -> m ()
+set :: forall name env m s. (MonadReader env m, Has name env, Stuff name env ~ State s m) => s -> m ()
 set s = 
-    do c <- getCapability @env @m @name @(State s) <$> ask
+    do c <- getStuff @name <$> ask
        _set c s
 
-modify :: forall name env m s. (MonadReader env m, Capable env m name (State s)) => (s -> s) -> m ()
+modify :: forall name env m s. (MonadReader env m, Has name env, Stuff name env ~ State s m) => (s -> s) -> m ()
 modify f = 
-    do c <- getCapability @env @m @name @(State s) <$> ask
+    do c <- getStuff @name <$> ask
        _modify c f
 
 -- implementations 
-mkRefBackedState :: MonadIO m => s -> m (State s m)
+mkRefBackedState :: MonadIO m => s -> IO (State s m)
 mkRefBackedState s =
     do ref <- liftIO $ newIORef s
        return (State (liftIO $ readIORef ref)

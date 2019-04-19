@@ -5,8 +5,8 @@
              AllowAmbiguousTypes,
              TypeApplications #-}
 module Effectiviwonder (
-        Capable (..)
-    ,   MultiCapable (..) 
+        Has (..) 
+    ,   Capable (..)
     ,   Capabilities (..)
 ) where 
 
@@ -14,16 +14,18 @@ import Data.RBR
 import Data.Kind
 import GHC.TypeLits
 
-class Capable (env :: Type) (m :: Type -> Type) (name :: Symbol) (c :: (Type -> Type) -> Type) where
-    getCapability :: env -> c m
+class Has (name :: Symbol) (env :: Type) where
+    type Stuff name env :: Type
+    getStuff :: env -> Stuff name env
 
-type family MultiCapable (env :: Type) (m :: Type -> Type) (cs :: [ (Symbol, (Type -> Type) -> Type) ]) :: Constraint where
-    MultiCapable _   _ '[]                  = ()
-    MultiCapable env m ( '(name, c) ': xs ) = (Capable env m name c, MultiCapable env m xs)
+type family Capable (env :: Type) (m :: Type -> Type) (cs :: [ (Symbol, (Type -> Type) -> Type) ]) :: Constraint where
+    Capable _   _ '[]                  = ()
+    Capable env m ( '(name, c) ': xs ) = (Has name env, Stuff name env ~ c m, Capable env m xs)
 
 -- There's no reqirement to use a Capabilities as the environment, but is is convenient
 newtype Capabilities (t :: Map Symbol Type) = Capabilities (Record I t)
 
-instance (Key name t, Value name t ~ c m) => Capable (Capabilities t) m name c where
-    getCapability (Capabilities r) = getFieldI @name r
+instance Key name t => Has name (Capabilities t) where
+    type Stuff name (Capabilities t) = Value name t
+    getStuff (Capabilities r) = getFieldI @name r
 

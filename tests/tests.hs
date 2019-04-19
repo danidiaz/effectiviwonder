@@ -34,7 +34,7 @@ tests = testGroup "Tests" [
                           ]
 
 modifyTwoStates :: (MonadReader  env m, 
-                    MultiCapable env m '[ '("foo",State Int), '("bar",State Int) ])
+                    Capable      env m '[ '("foo",State Int), '("bar",State Int) ])
                 => m (Int,Int)
 modifyTwoStates = 
     do modify @"foo" succ
@@ -43,8 +43,14 @@ modifyTwoStates =
 
 modifyTwoStatesTest :: Assertion
 modifyTwoStatesTest = do
-    --let insertI @""  
-    return ()
+    s1 <- mkRefBackedState  (1 :: Int)
+    s2 <- mkRefBackedState  (7 :: Int)
+    let env = insertI @"foo" s1
+            . insertI @"bar" s2
+            $ unit
+    (r1,r2) <- runReaderT modifyTwoStates env
+    assertEqual "r1" 2 r1
+    assertEqual "r2" 8 r2
 
 main :: IO ()
 main = defaultMain tests
