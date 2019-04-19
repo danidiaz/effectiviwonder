@@ -34,7 +34,7 @@ tests = testGroup "Tests" [
                           ]
 
 modifyTwoStates :: (Monad m, 
-                    Capable env m '[ '("foo",State Int), '("bar",State Int) ])
+                    MultiCapable env m '[ '("foo",State Int), '("bar",State Int) ])
                 => ReaderT env m (Int,Int)
 modifyTwoStates = 
     do modify @"foo" succ
@@ -54,3 +54,4 @@ modifyTwoStatesTest = do
 
 main :: IO ()
 main = defaultMain tests
+
