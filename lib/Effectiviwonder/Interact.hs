@@ -7,10 +7,7 @@
 module Effectiviwonder.Interact (
         Interact(..)
       , request
---    ,   get
---    ,   set
---    ,   modify
---    ,   mkRefBackedState
+      , mkInteractFromMap
     ) where
 
 import Effectiviwonder
@@ -19,6 +16,8 @@ import Control.Monad.IO.Class
 --import Control.Monad.Reader (MonadReader(..))
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
+import Data.Map.Strict
+import Control.Exception
 
 import Data.Proxy
 
@@ -31,27 +30,10 @@ request req =
     do c <- getCapability @name <$> ask
        lift $ _request c req
 --
--- -- These constraints are kind of horrific :(
--- get :: forall name env m s. (Monad m, Capable name env, Capability name env ~ State s m) => ReaderT env m s
--- get =
---     do c <- getCapability @name <$> ask
---        lift $ _get c
--- 
--- set :: forall name env m s. (Monad m, Capable name env, Capability name env ~ State s m) => s -> ReaderT env m ()
--- set s = 
---     do c <- getCapability @name <$> ask
---        lift $ _set c s
--- 
--- modify :: forall name env m s. (Monad m,Capable name env, Capability name env ~ State s m) => (s -> s) -> ReaderT env m ()
--- modify f = 
---     do c <- getCapability @name <$> ask
---        lift $ _modify c f
--- 
--- -- implementations 
--- mkRefBackedState :: MonadIO m => s -> IO (State s m)
--- mkRefBackedState s =
---     do ref <- newIORef s
---        return (State (liftIO $ readIORef ref)
---                      (liftIO . writeIORef ref)
---                      (liftIO . modifyIORef ref))
--- 
+--
+mkInteractFromMap :: (Ord req, Show req) => Map req res -> Interact req res IO 
+mkInteractFromMap f = 
+    Interact $ \req -> case Data.Map.Strict.lookup req f of
+                    Nothing -> throwIO (userError ("request not found in map " ++ show req))
+                    Just res -> return res
+
