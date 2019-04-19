@@ -4,7 +4,11 @@
              FlexibleInstances,
              AllowAmbiguousTypes,
              TypeApplications #-}
-module Effectiviwonder () where 
+module Effectiviwonder (
+        Capable (..)
+    ,   MultiCapable (..) 
+    ,   Capabilities (..)
+) where 
 
 import Data.RBR
 import Data.Kind
