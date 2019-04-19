@@ -15,7 +15,9 @@ module Effectiviwonder.State (
 import Effectiviwonder
 import Data.IORef
 import Control.Monad.IO.Class
-import Control.Monad.Reader (MonadReader(..))
+--import Control.Monad.Reader (MonadReader(..))
+import Control.Monad.Trans
+import Control.Monad.Trans.Reader
 
 import Data.Proxy
 
@@ -26,25 +28,25 @@ data State s m = State {
     }
 
 -- These constraints are kind of horrific :(
-get :: forall name env m s. (MonadReader env m, Has name env, Stuff name env ~ State s m) => m s
+get :: forall name env m s. (Has name env, Stuff name env ~ State s m, Monad m) => ReaderT env m s
 get =
     do c <- getStuff @name <$> ask
-       _get c
+       lift $ _get c
 
-set :: forall name env m s. (MonadReader env m, Has name env, Stuff name env ~ State s m) => s -> m ()
+set :: forall name env m s. (Has name env, Stuff name env ~ State s m, Monad m) => s -> ReaderT env m ()
 set s = 
     do c <- getStuff @name <$> ask
-       _set c s
+       lift $ _set c s
 
-modify :: forall name env m s. (MonadReader env m, Has name env, Stuff name env ~ State s m) => (s -> s) -> m ()
+modify :: forall name env m s. (Has name env, Stuff name env ~ State s m, Monad m) => (s -> s) -> ReaderT env m ()
 modify f = 
     do c <- getStuff @name <$> ask
-       _modify c f
+       lift $ _modify c f
 
 -- implementations 
 mkRefBackedState :: MonadIO m => s -> IO (State s m)
 mkRefBackedState s =
-    do ref <- liftIO $ newIORef s
+    do ref <- newIORef s
        return (State (liftIO $ readIORef ref)
                      (liftIO . writeIORef ref)
                      (liftIO . modifyIORef ref))
