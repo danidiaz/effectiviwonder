@@ -24,6 +24,7 @@ source-repository head
 
 library
   exposed-modules:     Effectiviwonder
+                       Effectiviwonder.State
   build-depends:       base                 >= 4.10.0.0 && < 5,
                        red-black-record     >= 2.0.2.2
   hs-source-dirs:      lib
