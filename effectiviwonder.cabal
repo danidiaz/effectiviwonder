@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:     Effectiviwonder
                        Effectiviwonder.State
+                       Effectiviwonder.Interact
   build-depends:       base                 >= 4.10.0.0 && < 5,
                        red-black-record     >= 2.0.2.2,
                        transformers         >= 0.5, 
