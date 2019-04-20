@@ -10,7 +10,7 @@ The capabilities are named.
 
 See the "tests.hs" file in the repo for some examples.
 
-## How to add a new capability?
+## How to create a capability?
 
 3 steps:
 
@@ -24,7 +24,7 @@ Notice that the helper methods require `-XTypeApplications`, `-XDataKinds` and
 that identifies the capability in the record-of-capabilities. There are no
 "anonymous" capabilities.
 
-### What about capabilities that depend on lower-level ones?
+### What about complex capabilities that depend on lower-level ones?
 
 Just as before, but the creation of implementations is more involved.
 
