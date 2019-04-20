@@ -38,8 +38,8 @@ effects.  See the `mkUsers` function in "test.hs" for an example.
 
 ### Doesn't that mean that to build a member of the record-of-capabilities we need the record-of-capabilities itself?
 
-Yes, we have to tie the knot. See the `fixRecord` function in module
-`Effectiviwonder`.
+Yes, we have to [tie the knot](https://wiki.haskell.org/Tying_the_Knot). See
+the `fixRecord` function in module `Effectiviwonder`.
 
 That function takes an "open"
 [`Record`](http://hackage.haskell.org/package/red-black-record-2.0.2.2/docs/Data-RBR.html#t:Record)
