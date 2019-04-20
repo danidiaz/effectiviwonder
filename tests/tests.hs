@@ -73,14 +73,15 @@ data Users m = Users {
        _getUserById :: UserId -> m User
     }
 
+-- Convenience method for ease of use in a ReaderT
 getUserById :: forall name env m. (Monad m, Capable name env, Capability name env ~ Users m) => UserId -> ReaderT env m User
 getUserById userId =
     do c <- getCapability @name <$> ask
        lift $ _getUserById c userId
 
--- The implementation of the "Users" capabilty.
--- It makes use of a record-of-capabilities for accessing more basic capabilities.
--- The names of the capabilities are received as type-level Symbols.
+-- The implementation of the "Users" capability.  It makes use of a
+-- record-of-capabilities argument for accessing more basic capabilities.  The
+-- names of the capabilities are received as type-level Symbols.
 mkUsers :: forall iname yname sname m env. 
            (Monad m, MultiCapable env m '[ '(iname,Interact UserId User),
                                            '(yname,Yield String),
@@ -112,6 +113,7 @@ getTwoUsersTest = do
     y <- mkRefBackedYield
     let mockReqs = M.fromList [(1::Int,User "Foo"), (2::Int,User "Bar")]
         env  = fixRecord
+             -- "complex" capabilities that depend on others get them through the record parameter
              . insert @"users" (\env -> mkUsers @"i" @"y" @"s" (Capabilities env))
              -- "basic" capabilities that do not depend on others ignore the record parameter
              . insert @"i"     (\_   -> mkInteractFromMap mockReqs)

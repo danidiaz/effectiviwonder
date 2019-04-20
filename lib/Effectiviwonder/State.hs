@@ -15,11 +15,8 @@ module Effectiviwonder.State (
 import Effectiviwonder
 import Data.IORef
 import Control.Monad.IO.Class
---import Control.Monad.Reader (MonadReader(..))
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
-
-import Data.Proxy
 
 data State s m = State {
        _get :: m s 
@@ -27,7 +24,9 @@ data State s m = State {
     ,  _modify :: (s -> s) -> m ()
     }
 
--- These constraints are kind of horrific :(
+-- Notice that the name of the capability must be supplied through type applications.
+--
+-- These constraints are kind of verbose :(
 get :: forall name env m s. (Monad m, Capable name env, Capability name env ~ State s m) => ReaderT env m s
 get =
     do c <- getCapability @name <$> ask

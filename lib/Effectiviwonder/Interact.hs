@@ -13,18 +13,17 @@ module Effectiviwonder.Interact (
 import Effectiviwonder
 
 import Control.Monad.IO.Class
---import Control.Monad.Reader (MonadReader(..))
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
 import Data.Map.Strict
 import Control.Exception
 
-import Data.Proxy
-
 data Interact req res m = Interact {
        _request :: req -> m res
     }
 
+-- Notice that the name of the capability must be supplied through type applications.
+--
 request :: forall name env m req res. (Monad m, Capable name env, Capability name env ~ Interact req res m) => req -> ReaderT env m res
 request req =
     do c <- getCapability @name <$> ask
