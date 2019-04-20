@@ -111,7 +111,7 @@ getTwoUsersTest :: Assertion
 getTwoUsersTest = do
     s <- mkRefBackedState 1
     y <- mkRefBackedYield
-    let mockReqs = M.fromList [(1::Int,User "Foo"), (2::Int,User "Bar")]
+    let mockReqs = M.fromList [(1,User "Foo"), (2,User "Bar")]
         env  = fixRecord
              -- "complex" capabilities that depend on others get them through the record parameter
              . insert @"users" (\env -> mkUsers @"i" @"y" @"s" (Capabilities env))
