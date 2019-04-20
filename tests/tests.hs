@@ -14,7 +14,7 @@
 {-# OPTIONS_GHC -Wno-partial-type-signatures #-}
 module Main where
 
-import Effectiviwonder          (MultiCapable,Capable,Capability,getCapability,Capabilities(..),fixRecord)
+import Effectiviwonder          (MultiCapable,Capable,Capability,getCapability,Capabilities(..),fixRecord,mfixRecord)
 import Effectiviwonder.State    (State,get,modify,mkRefBackedState)
 import Effectiviwonder.Interact (Interact,request,mkInteractFromMap)
 import Effectiviwonder.Yield    (Yield,yield,mkRefBackedYield)
@@ -24,6 +24,7 @@ import Data.RBR (insertI,insert,unit) -- from red-black-record
 import GHC.TypeLits
 import Data.Proxy
 import Data.Kind
+import Data.Functor.Compose
 import GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
 import Test.Tasty
@@ -36,7 +37,8 @@ import Control.Monad.Trans.Reader
 tests :: TestTree
 tests = testGroup "Tests" [ 
                                 testCase "twoDifferentStates" twoDifferentStatesTest,
-                                testCase "getTwoUsers" getTwoUsersTest
+                                testCase "getTwoUsers" getTwoUsersTest,
+                                testCase "getTwoUsers_mfix" getTwoUsersTest_mfix
                           ]
 
 -- Test for two capabilities with the same type
@@ -125,6 +127,24 @@ getTwoUsersTest = do
     assertEqual "u2" (User "Bar") u2
     return ()
 
+--
+-- Like getTwoUsersTest, but moves the allocations into the record construction
+getTwoUsersTest_mfix :: Assertion
+getTwoUsersTest_mfix = do
+    env <- mfixRecord
+         -- "complex" capabilities that depend on others get them through the record parameter
+         . insert @"users" (Compose $ \env -> return $ mkUsers @"i" @"y" @"s" (Capabilities env))
+         -- "basic" capabilities that do not depend on others ignore the record parameter
+         . insert @"i"     (Compose $ \_   -> do let mockReqs = M.fromList [(1,User "Foo"), 
+                                                                            (2,User "Bar")]
+                                                 return $ mkInteractFromMap mockReqs)
+         . insert @"y"     (Compose $ \_   -> mkRefBackedYield)
+         . insert @"s"     (Compose $ \_   -> mkRefBackedState 1)
+         $ unit
+    (u1,u2) <- runReaderT getTwoUsers (Capabilities env)
+    assertEqual "u1" (User "Foo") u1
+    assertEqual "u2" (User "Bar") u2
+    return ()
 --
 --
 

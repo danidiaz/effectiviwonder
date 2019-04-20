@@ -10,6 +10,7 @@ module Effectiviwonder (
     ,   MultiCapable (..)
     ,   Capabilities (..)
     ,   fixRecord
+    ,   mfixRecord
 ) where 
 
 import Data.RBR (Map,Key,Value,Record,getFieldI,Productlike,fromNP,toNP) -- from red-black-record
@@ -17,6 +18,8 @@ import Data.SOP (All,Top,I(..))       -- from sop-core
 import Data.SOP.NP (sequence_NP)   -- from sop-core
 import Data.Kind (Type,Constraint) 
 import Data.Function (fix)
+import Control.Monad.Fix (MonadFix,mfix)
+import Data.Functor.Compose
 import GHC.TypeLits
 
 -- Basically a "Has"-like typecass that looks into a record-of-capabilities.
@@ -48,4 +51,10 @@ fixRecord o =
     let knotted = fix $ fmap fromNP . sequence_NP . toNP $ o
      in knotted
 
+mfixRecord :: forall t result m. (Productlike '[] t result, All Top result, MonadFix m) -- constraints required by red-black-record
+           => Record (Compose ((->) (Record I t)) m) t 
+           -> m (Record I t)
+mfixRecord o = 
+    let knotted = mfix $ getCompose . fmap fromNP . sequence_NP . toNP $ o
+     in knotted
 
