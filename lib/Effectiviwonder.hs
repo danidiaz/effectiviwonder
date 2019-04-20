@@ -30,7 +30,7 @@ type family MultiCapable (env :: Type) (m :: Type -> Type) (cs :: [ (Symbol, (Ty
     MultiCapable _   _ '[]                  = ()
     MultiCapable env m ( '(name, c) ': xs ) = (Capable name env, Capability name env ~ c m, MultiCapable env m xs)
 
--- There's no reqirement to use a Capabilities as the environment, but is is convenient
+-- There's no reqirement to use a Capabilities as the environment, but it is convenient
 newtype Capabilities (t :: Map Symbol Type) = Capabilities (Record I t)
 
 -- Implement Capable in terms of the machinery of the Key/Value machinery of red-black-record
