@@ -64,7 +64,7 @@ twoDifferentStatesTest = do
 --
 
 -- This is the definition of a complex "Users" capability that relies on more
--- basic capability like State, Interact and Yield.
+-- basic capabilities like State, Interact and Yield.
 type UserId = Int
 
 data User = User { userName :: String } deriving (Eq,Show)
