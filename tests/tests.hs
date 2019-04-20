@@ -19,7 +19,7 @@ import GHC.TypeLits
 import Data.Proxy
 import Data.Kind
 import GHC.Generics (Generic)
-
+import qualified Data.Map.Strict as M
 import Test.Tasty
 import Test.Tasty.HUnit (testCase,Assertion,assertEqual,assertBool)
 
@@ -33,25 +33,26 @@ import Effectiviwonder.Yield
 
 tests :: TestTree
 tests = testGroup "Tests" [ 
-                                testCase "modifyTwoStates" modifyTwoStatesTest
+                                testCase "twoDifferentStates" twoDifferentStatesTest,
+                                testCase "getTwoUsers" getTwoUsersTest
                           ]
 
-modifyTwoStates :: (Monad m, 
+twoDifferentStates :: (Monad m, 
                     MultiCapable env m '[ '("foo",State Int), '("bar",State Int) ])
                 => ReaderT env m (Int,Int)
-modifyTwoStates = 
+twoDifferentStates = 
     do modify @"foo" succ
        modify @"bar" succ
        (,) <$> get @"foo" <*> get @"bar"
 
-modifyTwoStatesTest :: Assertion
-modifyTwoStatesTest = do
+twoDifferentStatesTest :: Assertion
+twoDifferentStatesTest = do
     s1 <- mkRefBackedState 1
     s2 <- mkRefBackedState 7
     let env = insertI @"foo" s1
             . insertI @"bar" s2
             $ unit
-    (r1,r2) <- runReaderT modifyTwoStates (Capabilities env)
+    (r1,r2) <- runReaderT twoDifferentStates (Capabilities env)
     assertEqual "r1" 2 r1
     assertEqual "r2" 8 r2
 
@@ -80,6 +81,40 @@ mkUsers interactor yielder stateful = Users (\uid ->
        u <- _request interactor uid
        _modify stateful succ
        return u)
+
+mkUsers' :: forall iname yname sname m env. (Monad m, MultiCapable env m '[ '(iname,Interact UserId User),
+                                                                            '(yname,Yield String),
+                                                                            '(sname,State Int) ])
+         => env
+         -> Users m
+mkUsers' env = Users mkGetUserById
+  where
+    mkGetUserById uid = flip runReaderT env $
+        do yield @yname "Looking for an user" 
+           u <- request @iname uid
+           modify @sname succ
+           return u
+
+getTwoUsers :: (Monad m, 
+                MultiCapable env m '[ '("users",Users) ])
+            => ReaderT env m (User,User)
+getTwoUsers = 
+    do u1 <- getUserById @"users" 1
+       u2 <- getUserById @"users" 2
+       return (u1,u2)
+
+getTwoUsersTest :: Assertion
+getTwoUsersTest = do
+    s <- mkRefBackedState 1
+    let mockReqs = M.fromList [(1::Int,User "Foo"), (2::Int,User "Bar")]
+        env' = insert @"users" (mkUsers' @"i" @"y" @"s")
+             . insert @"i"     (\_ -> mkInteractFromMap mockReqs)
+             . insert @"y"     (\_ -> Yield putStrLn)
+             . insert @"s"     (\_ -> s :: State Int IO)
+             $ unit
+        env = fixRecord env'
+    _ <- runReaderT getTwoUsers (Capabilities env)
+    return ()
 
 --
 --
