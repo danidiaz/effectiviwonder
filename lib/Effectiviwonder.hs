@@ -14,8 +14,9 @@ module Effectiviwonder (
 
 import Data.RBR (Map,Key,Value,Record,getFieldI,Productlike,fromNP,toNP) -- from red-black-record
 import Data.SOP (All,Top,I(..))       -- from sop-core
-import Data.SOP.NP (liftA_NP)   -- from sop-core
+import Data.SOP.NP (sequence_NP)   -- from sop-core
 import Data.Kind (Type,Constraint) 
+import Data.Function (fix)
 import GHC.TypeLits
 
 -- Basically a "Has"-like typecass that looks into a record-of-capabilities.
@@ -44,6 +45,7 @@ fixRecord :: forall t result. (Productlike '[] t result, All Top result) -- cons
           => Record ((->) (Record I t)) t 
           -> Record I t
 fixRecord o = 
-    let knotted = fromNP . liftA_NP (\f -> I (f knotted)) . toNP $ o
+    let knotted = fix $ fmap fromNP . sequence_NP . toNP $ o
      in knotted
+
 
