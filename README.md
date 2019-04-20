@@ -14,9 +14,9 @@ See the "tests.hs" file in the repo for some exmaples.
 
 3 steps:
 
-    - Create a record-of-functions parameterized by a monad.
-    - Create some helper methods that can be called directly on a ReaderT.
-    - Create one or more implementations that create a record-of-functions for some monad.
+- Create a record-of-functions parameterized by a monad.
+- Create some helper methods that can be called directly on a ReaderT.
+- Create one or more implementations that create a record-of-functions for some monad.
 
 Notice that the helper methods require `-XTypeApplications`, `-XDataKinds` and
 `-XAllowAmbiguousTypes`. Their first type parameter is the name (passed as a
