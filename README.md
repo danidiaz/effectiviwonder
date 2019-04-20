@@ -2,9 +2,11 @@
 
 [Faemino y Cansado - Excursión a Segovia](https://www.youtube.com/watch?v=Iov8_6a46Fg).
 
-An experiment with the ReaderT pattern and [extensible records](http://hackage.haskell.org/package/red-black-record).
+An experiment with the [ReaderT
+design pattern](https://www.fpcomplete.com/blog/2017/06/readert-design-pattern) and
+[extensible records](http://hackage.haskell.org/package/red-black-record).
 
-The effects are named. 
+The capabilities are named. 
 
 See the "tests.hs" file in the repo for some exmaples.
 
@@ -51,8 +53,8 @@ Yes, this is an easy way of getting an infinite loop.
 ## Pending questions
 
 Right now capabilities whose creation involves some effect (like adquiring some
-resource) have to be created outside of the record itself. Is there a way of
-keeping them in the record, and perform an "effecful" knot tie? 
+resource) have to be created outside of the record. Is there a way of keeping
+them in the record, and perform an "effecful" knot tie? 
 
 ## See also
 
