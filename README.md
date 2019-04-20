@@ -28,7 +28,7 @@ that identifies the capability in the record-of-capabilities. There are no
 
 Just as before, but the creation of implementations is more involved.
 
-The following property is desirable: implementing the logic for an "capability"
+The following property is desirable: implementing the logic for a "capability"
 shouldn't be substantially different from implementing the top-level logic.
 (This is something that OO dependency injection gets right.)
 
