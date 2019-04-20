@@ -8,7 +8,7 @@ design pattern](https://www.fpcomplete.com/blog/2017/06/readert-design-pattern) 
 
 The capabilities are named. 
 
-See the "tests.hs" file in the repo for some exmaples.
+See the "tests.hs" file in the repo for some examples.
 
 ## How to add a new capability?
 
