@@ -14,7 +14,7 @@
 {-# OPTIONS_GHC -Wno-partial-type-signatures #-}
 module Main where
 
-import Effectiviwonder          (MultiCapable,Capable,Capability,getCapability,Capabilities(..),fixRecord,mfixRecord)
+import Effectiviwonder          (MultiCapable,Capable,Capability,getCapability,Capabilities(..),fixRecord,mfixRecord,fixManagedRecord)
 import Effectiviwonder.State    (State,get,modify,mkRefBackedState)
 import Effectiviwonder.Interact (Interact,request,mkInteractFromMap)
 import Effectiviwonder.Yield    (Yield,yield,mkRefBackedYield)
@@ -27,9 +27,11 @@ import Data.Kind
 import Data.Functor.Compose
 import GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
+
 import Test.Tasty
 import Test.Tasty.HUnit (testCase,Assertion,assertEqual,assertBool)
 
+import Control.Monad.Managed
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
 

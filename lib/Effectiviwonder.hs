@@ -14,11 +14,12 @@ module Effectiviwonder (
 ) where 
 
 import Data.RBR (Map,Key,Value,Record,getFieldI,Productlike,fromNP,toNP) -- from red-black-record
-import Data.SOP (All,Top,I(..))       -- from sop-core
-import Data.SOP.NP (sequence_NP)   -- from sop-core
+import Data.SOP (All,Top,I(..),(:.:)(..))       -- from sop-core
+import Data.SOP.NP (sequence_NP,sequence'_NP)   -- from sop-core
 import Data.Kind (Type,Constraint) 
 import Data.Function (fix)
 import Control.Monad.Fix (MonadFix,mfix)
+import Control.Monad.Managed
 import Data.Functor.Compose
 import GHC.TypeLits
 
@@ -58,3 +59,11 @@ mfixRecord o =
     let knotted = mfix $ getCompose . fmap fromNP . sequence_NP . toNP $ o
      in knotted
 
+fixManagedRecord :: forall t result. (Productlike '[] t result, All Top result)
+                 => Record (Managed :.: (->) (Record I t)) t
+                 -> Managed (Record I t)
+fixManagedRecord o = 
+    do np <- sequence'_NP . toNP $ o  
+       let r = fromNP <$> sequence_NP np
+       return $ fix r
+    

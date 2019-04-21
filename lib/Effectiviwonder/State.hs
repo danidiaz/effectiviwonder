@@ -14,6 +14,7 @@ module Effectiviwonder.State (
 
 import Effectiviwonder
 import Data.IORef
+import Control.Monad.Managed
 import Control.Monad.IO.Class
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
