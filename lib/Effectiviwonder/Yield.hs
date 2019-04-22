@@ -8,6 +8,7 @@ module Effectiviwonder.Yield (
         Yield(..)
       , yield
       , mkRefBackedYield
+      , mkManagedRefBackedYield
     ) where
 
 import Effectiviwonder
@@ -16,6 +17,7 @@ import Data.IORef
 import Control.Monad.IO.Class
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
+import Control.Monad.Managed
 
 data Yield y m = Yield {
        _yield :: y -> m ()
@@ -32,4 +34,9 @@ yield y =
 mkRefBackedYield :: MonadIO m => IO (Yield y m)
 mkRefBackedYield =
     do ref <- newIORef []
+       return (Yield (\y -> liftIO $ modifyIORef ref (\ys -> ys ++ [y])))
+
+mkManagedRefBackedYield :: MonadIO m => Managed (Yield y m)
+mkManagedRefBackedYield =
+    do ref <- managed $ \cnt -> newIORef [] >>= cnt
        return (Yield (\y -> liftIO $ modifyIORef ref (\ys -> ys ++ [y])))

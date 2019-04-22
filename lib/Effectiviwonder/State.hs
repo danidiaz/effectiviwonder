@@ -3,17 +3,21 @@
              ExplicitForAll,
              TypeApplications,
              TypeFamilies,
-             AllowAmbiguousTypes #-}
+             TypeOperators,
+             AllowAmbiguousTypes,
+             ApplicativeDo #-}
 module Effectiviwonder.State (
         State(..)
     ,   get
     ,   set
     ,   modify
     ,   mkRefBackedState
+    ,   mkManagedRefBackedState
     ) where
 
 import Effectiviwonder
 import Data.IORef
+import Data.SOP (All,Top,I(..),(:.:)(..))       -- from sop-core
 import Control.Monad.Managed
 import Control.Monad.IO.Class
 import Control.Monad.Trans
@@ -50,5 +54,12 @@ mkRefBackedState s =
        return (State (liftIO $ readIORef ref)
                      (liftIO . writeIORef ref)
                      (liftIO . modifyIORef ref))
+
+mkManagedRefBackedState :: MonadIO m => s -> Managed (State s m)
+mkManagedRefBackedState s =
+    do ref <- managed $ \cnt -> newIORef s >>= cnt
+       pure (State (liftIO $ readIORef ref)
+                   (liftIO . writeIORef ref)
+                   (liftIO . modifyIORef ref))
 
 

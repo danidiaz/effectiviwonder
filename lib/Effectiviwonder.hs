@@ -11,6 +11,7 @@ module Effectiviwonder (
     ,   Capabilities (..)
     ,   fixRecord
     ,   mfixRecord
+    ,   fixManagedRecord
 ) where 
 
 import Data.RBR (Map,Key,Value,Record,getFieldI,Productlike,fromNP,toNP) -- from red-black-record

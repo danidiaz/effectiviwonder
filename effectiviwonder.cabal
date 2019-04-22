@@ -44,6 +44,7 @@ test-suite tests
   main-is:             tests.hs
   build-depends:
                        base                 >= 4.10.0.0 && < 5,
+                       sop-core             >= 0.4.0.0,
                        tasty                >= 0.10.1.1,
                        tasty-hunit          >= 0.9.2,
                        red-black-record     >= 2.0.2.2,

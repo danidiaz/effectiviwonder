@@ -15,9 +15,9 @@
 module Main where
 
 import Effectiviwonder          (MultiCapable,Capable,Capability,getCapability,Capabilities(..),fixRecord,mfixRecord,fixManagedRecord)
-import Effectiviwonder.State    (State,get,modify,mkRefBackedState)
+import Effectiviwonder.State    (State,get,modify,mkRefBackedState,mkManagedRefBackedState)
 import Effectiviwonder.Interact (Interact,request,mkInteractFromMap)
-import Effectiviwonder.Yield    (Yield,yield,mkRefBackedYield)
+import Effectiviwonder.Yield    (Yield,yield,mkRefBackedYield,mkManagedRefBackedYield)
 
 import Data.RBR (insertI,insert,unit) -- from red-black-record
 
@@ -27,6 +27,9 @@ import Data.Kind
 import Data.Functor.Compose
 import GHC.Generics (Generic)
 import qualified Data.Map.Strict as M
+
+import Data.SOP (All,Top,I(..),(:.:)(..))       -- from sop-core
+import Control.Monad.Managed
 
 import Test.Tasty
 import Test.Tasty.HUnit (testCase,Assertion,assertEqual,assertBool)
@@ -40,7 +43,8 @@ tests :: TestTree
 tests = testGroup "Tests" [ 
                                 testCase "twoDifferentStates" twoDifferentStatesTest,
                                 testCase "getTwoUsers" getTwoUsersTest,
-                                testCase "getTwoUsers_mfix" getTwoUsersTest_mfix
+                                testCase "getTwoUsers_mfix" getTwoUsersTest_mfix,
+                                testCase "getTwoUsers_managed" getTwoUsersTest_managed
                           ]
 
 -- Test for two capabilities with the same type
@@ -135,7 +139,7 @@ getTwoUsersTest_mfix :: Assertion
 getTwoUsersTest_mfix = do
     env <- mfixRecord
          -- "complex" capabilities that depend on others get them through the record parameter
-         . insert @"users" (Compose $ \env -> return $ mkUsers @"i" @"y" @"s" (Capabilities env))
+         . insert @"users" (Compose $ \envx -> return $ mkUsers @"i" @"y" @"s" (Capabilities envx))
          -- "basic" capabilities that do not depend on others ignore the record parameter
          . insert @"i"     (Compose $ \_   -> do let mockReqs = M.fromList [(1,User "Foo"), 
                                                                             (2,User "Bar")]
@@ -150,6 +154,28 @@ getTwoUsersTest_mfix = do
 --
 --
 
+--
+-- Like getTwoUsersTest, but handles the allocations with Managed
+getTwoUsersTest_managed :: Assertion
+getTwoUsersTest_managed = do
+    let env = fixManagedRecord
+            -- "complex" capabilities that depend on others get them through the record parameter
+            . insert @"users" (Comp $ pure $ \envx -> mkUsers @"i" @"y" @"s" (Capabilities envx))
+            -- . insert @"users" (Comp $ pure $ \envx -> mkUsers @"i" @"y" @"s" (Capabilities envx))
+            -- "basic" capabilitiesat do not depend on others ignore the record parameter
+            . insert @"i"     (Comp $ pure $ \_   -> let mockReqs = M.fromList [(1,User "Foo"), 
+                                                                                (2,User "Bar")]
+                                                      in mkInteractFromMap mockReqs)
+            . insert @"y"     (Comp $ fmap const $ mkManagedRefBackedYield)
+            . insert @"s"     (Comp $ fmap const $ mkManagedRefBackedState 1)
+            $ unit
+    (u1,u2) <- with env $ runReaderT getTwoUsers . Capabilities
+    assertEqual "u1" (User "Foo") u1
+    assertEqual "u2" (User "Bar") u2
+    return ()
+--
+--
+--
 main :: IO ()
 main = defaultMain tests
 
